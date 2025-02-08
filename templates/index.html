@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Recommender System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212; /* Dark background */
+            color: #ffffff; /* White text */
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: white;
+        }
+        .search-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 60%;
+            margin: 0 auto;
+        }
+        .search-container {
+            position: relative;
+            flex-grow: 1;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            border: 2px solid #ff0000;
+            border-radius: 25px;
+            background-color: #1e1e1e;
+            color: #ffffff;
+            outline: none;
+            text-align: center;
+        }
+        .suggestions {
+            position: absolute;
+            width: 100%;
+            background-color: #1e1e1e;
+            border: 1px solid #ff0000;
+            border-radius: 10px;
+            display: none;
+            z-index: 10;
+        }
+        .suggestions div {
+            padding: 10px;
+            cursor: pointer;
+            color: white;
+            text-align: center;
+        }
+        .suggestions div:hover {
+            background-color: #333333;
+        }
+        button {
+            padding: 12px 20px;
+            font-size: 18px;
+            border: none;
+            border-radius: 25px;
+            background-color: #ff0000;
+            color: #ffffff;
+            cursor: pointer;
+            margin-left: 50px;
+            white-space: nowrap;
+        }
+        button:hover {
+            background-color: #cc0000;
+        }
+        .recommendations {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .movie {
+            margin: 10px;
+            text-align: center;
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            padding: 10px;
+            width: 200px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s;
+        }
+        .movie:hover {
+            transform: scale(1.05);
+        }
+        img {
+            width: 100%;
+            border-radius: 10px;
+        }
+        p {
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Movie Recommender System</h1>
+    
+    <form action="/" method="post" id="searchForm">
+        <div class="search-wrapper">
+            <div class="search-container">
+                <input type="text" id="movieSearch" name="movie" placeholder="Search for a movie..." autocomplete="off">
+                <div class="suggestions" id="suggestionsBox"></div>
+            </div>
+            <button type="submit">Show Recommendation</button>
+        </div>
+    </form>
+
+    {% if recommendations %}
+        <h2>Recommended Movies</h2>
+        <div class="recommendations">
+            {% for name, poster in recommendations %}
+                <div class="movie">
+                    <img src="{{ poster }}" alt="{{ name }}">
+                    <p>{{ name }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <script>
+        let movieList = {{ movie_list | tojson }};
+        let searchInput = document.getElementById('movieSearch');
+        let suggestionsBox = document.getElementById('suggestionsBox');
+
+        searchInput.addEventListener('input', function() {
+            let query = this.value.toLowerCase();
+            let filteredMovies = movieList.filter(movie => movie.toLowerCase().includes(query)).slice(0, 8);
+            
+            if (query && filteredMovies.length > 0) {
+                suggestionsBox.innerHTML = filteredMovies.map(movie => `<div onclick="selectMovie('${movie}')">${movie}</div>`).join('');
+                suggestionsBox.style.display = 'block';
+            } else {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+
+        function selectMovie(movie) {
+            searchInput.value = movie;
+            suggestionsBox.style.display = 'none';
+        }
+
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.search-container')) {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
